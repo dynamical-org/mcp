@@ -104,6 +104,28 @@ matching `status.dynamical.org`'s naming), add it via `custom_domains=[...]`
 on the `@modal.asgi_app()` call in `modal_app.py` and create the CNAME per
 Modal's dashboard instructions — see the comments in that file.
 
+## Publishing to the official MCP registry
+
+[`server.json`](server.json) is the [official MCP registry](https://github.com/modelcontextprotocol/registry)
+manifest for this server: a `streamable-http` remote entry pointing at the
+deployed `/mcp` endpoint, under the `io.github.dynamical-org/*` namespace
+(GitHub-org-owned, so publishing is authorized by a `dynamical-org` GitHub
+login — no DNS/domain verification needed).
+
+Publish it **after** the Modal deployment is live and its public URL is set
+in `server.json` (the placeholder is `https://mcp.dynamical.org/mcp`):
+
+```bash
+# Install the publisher CLI (see the registry repo for the latest release).
+mcp-publisher login github        # authenticate as a dynamical-org member
+mcp-publisher publish             # validates ./server.json and registers it
+```
+
+`server.json`'s `$schema` pins a dated registry schema version; if
+validation fails after a registry schema bump, regenerate the skeleton with
+`mcp-publisher init` and re-fill the fields. Keep `version` in `server.json`,
+`pyproject.toml`, and `server/__init__.py` in lockstep on each release.
+
 ## Configuration
 
 Upstream URLs and cache TTLs are all overridable via environment variables
@@ -125,4 +147,5 @@ server/
   tools/            one module per MCP tool
 tests/              pytest + respx, fixtures under tests/fixtures/
 modal_app.py        Modal deployment (see above)
+server.json         Official MCP registry manifest (see above)
 ```

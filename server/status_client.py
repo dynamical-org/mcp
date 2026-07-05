@@ -82,4 +82,8 @@ def find_product(summary: dict[str, Any], collection_id: str) -> dict[str, Any] 
 def monitored_collection_ids(summary: dict[str, Any]) -> list[str]:
     """Product ids that correspond to dynamical STAC collections, i.e.
     everything except the "external-*" upstream-source trackers."""
-    return [p["id"] for p in summary.get("products", []) if not p["id"].startswith("external-")]
+    return [
+        pid
+        for p in summary.get("products", [])
+        if (pid := p.get("id")) and not pid.startswith("external-")
+    ]
