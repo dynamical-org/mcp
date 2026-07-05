@@ -37,6 +37,7 @@ async def get_dataset_info(collection_id: str) -> dict:
 
     docs_link = stac_client.get_link(collection, "about")
     example_links = stac_client.get_links(collection, "example")
+    self_link = stac_client.get_link(collection, "self")
 
     return {
         "collection_id": collection["id"],
@@ -62,5 +63,7 @@ async def get_dataset_info(collection_id: str) -> dict:
         "example_notebooks": [
             {"title": link.get("title"), "url": link["href"]} for link in example_links
         ],
-        "stac_collection_url": f"https://stac.dynamical.org/{collection['id']}/collection.json",
+        # Prefer the collection's own `self` link so this stays correct if the
+        # catalog is served from a different host (e.g. staging via config).
+        "stac_collection_url": self_link["href"] if self_link else None,
     }
