@@ -1,0 +1,41 @@
+{
+  "generated_at": "2026-07-05T13:05:05.345811+00:00",
+  "window_days": 90,
+  "sla_status": "ok",
+  "products": [
+    {
+      "id": "external-noaa-gfs-aws",
+      "cadence_hours": 6,
+      "next_expected_init": "2026-07-05T18:00:00+00:00",
+      "recent_inits": []
+    },
+    {
+      "id": "noaa-gfs-forecast",
+      "label": "NOAA GFS forecast",
+      "cadence_hours": 6,
+      "next_expected_init": "2026-07-05T18:00:00+00:00",
+      "next_expected_completion_at": "2026-07-05T23:40:13.820671+00:00",
+      "latency_stats": {"p50_s": 19455.2, "p95_s": 20413.8, "p99_s": 30501.4, "avg_s": 19966.5, "sample_init_count": 148},
+      "recent_inits": [
+        {
+          "init_time": "2026-07-05T00:00:00+00:00",
+          "status": "complete",
+          "completion_pct": 1.0,
+          "on_timedness": "on_time"
+        },
+        {
+          "init_time": "2026-07-05T06:00:00+00:00",
+          "status": "complete",
+          "completion_pct": 1.0,
+          "on_timedness": "on_time"
+        },
+        {
+          "init_time": "2026-07-05T12:00:00+00:00",
+          "status": "processing",
+          "completion_pct": 0.0,
+          "on_timedness": "unobserved"
+        }
+      ]
+    }
+  ]
+}

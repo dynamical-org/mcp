@@ -1,0 +1,48 @@
+{
+  "type": "Collection",
+  "id": "noaa-gfs-analysis",
+  "stac_version": "1.1.0",
+  "title": "NOAA GFS analysis",
+  "description": "Analysis data from the Global Forecast System (GFS) operated by NOAA NWS NCEP.",
+  "description_summary": "This analysis dataset is an archive of the model's best estimate of past weather.",
+  "description_model": "The Global Forecast System (GFS) is a NOAA NCEP weather forecast model.",
+  "model_id": "noaa-gfs",
+  "model_name": "NOAA GFS",
+  "attribution": "NOAA NWS NCEP GFS data processed by dynamical.org.",
+  "license": "CC-BY-4.0",
+  "version": "0.2.7",
+  "extent": {
+    "spatial": {"bbox": [[-180.0, -90.0, 179.75, 90.0]]},
+    "temporal": {"interval": [["2021-05-01T00:00:00Z", null]]}
+  },
+  "summaries": {
+    "spatial_domain": ["Global"],
+    "spatial_resolution": ["0.25 degrees (~20km)"],
+    "time_domain": ["2021-05-01 00:00:00 UTC to Present"],
+    "time_resolution": ["1 hour"]
+  },
+  "cube:variables": {
+    "temperature_2m": {
+      "dimensions": ["time", "latitude", "longitude"],
+      "type": "data",
+      "unit": "C",
+      "long_name": "2 meter temperature",
+      "short_name": "t2m"
+    }
+  },
+  "assets": {
+    "icechunk": {
+      "href": "s3://dynamical-noaa-gfs/noaa-gfs-analysis/v0.2.0.icechunk/",
+      "type": "application/x-icechunk",
+      "title": "Icechunk v2 repository",
+      "xarray:open_kwargs": {"engine": "zarr"},
+      "xarray:storage_options": {"anon": true, "client_kwargs": {"region_name": "us-west-2"}},
+      "roles": ["data"]
+    }
+  },
+  "links": [
+    {"rel": "root", "href": "https://stac.dynamical.org/catalog.json", "type": "application/json"},
+    {"rel": "self", "href": "https://stac.dynamical.org/noaa-gfs-analysis/collection.json", "type": "application/json"},
+    {"rel": "about", "href": "https://dynamical.org/catalog/noaa-gfs-analysis/", "type": "text/html", "title": "Dataset documentation"}
+  ]
+}
