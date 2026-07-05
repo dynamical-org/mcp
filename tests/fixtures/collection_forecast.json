@@ -1,0 +1,66 @@
+{
+  "type": "Collection",
+  "id": "noaa-gfs-forecast",
+  "stac_version": "1.1.0",
+  "title": "NOAA GFS forecast",
+  "description": "Weather forecasts from the Global Forecast System (GFS) operated by NOAA NWS NCEP.",
+  "description_summary": "This dataset is an archive of past and present GFS forecasts.",
+  "description_model": "The Global Forecast System (GFS) is a NOAA NCEP weather forecast model.",
+  "model_id": "noaa-gfs",
+  "model_name": "NOAA GFS",
+  "attribution": "NOAA NWS NCEP GFS data processed by dynamical.org.",
+  "license": "CC-BY-4.0",
+  "version": "0.2.7",
+  "extent": {
+    "spatial": {"bbox": [[-180.0, -90.0, 179.75, 90.0]]},
+    "temporal": {"interval": [["2021-05-01T00:00:00Z", null]]}
+  },
+  "summaries": {
+    "spatial_domain": ["Global"],
+    "spatial_resolution": ["0.25 degrees (~20km)"],
+    "time_domain": ["Forecasts initialized 2021-05-01 00:00:00 UTC to Present"],
+    "time_resolution": ["Forecasts initialized every 6 hours"],
+    "forecast_domain": ["Forecast lead time 0-384 hours (0-16 days) ahead"],
+    "forecast_resolution": ["Forecast step 0-120 hours: hourly, 123-384 hours: 3 hourly"]
+  },
+  "cube:variables": {
+    "temperature_2m": {
+      "dimensions": ["init_time", "lead_time", "latitude", "longitude"],
+      "type": "data",
+      "unit": "C",
+      "long_name": "2 meter temperature",
+      "short_name": "t2m"
+    },
+    "precipitation_surface": {
+      "dimensions": ["init_time", "lead_time", "latitude", "longitude"],
+      "type": "data",
+      "unit": "kg/m^2",
+      "long_name": "Precipitation",
+      "short_name": "precip"
+    }
+  },
+  "examples": [
+    {
+      "title": "Maximum temperature in a forecast",
+      "language": "python",
+      "code": "import dynamical_catalog\n\nds = dynamical_catalog.open(\"noaa-gfs-forecast\")\nds[\"temperature_2m\"].max().compute()"
+    }
+  ],
+  "assets": {
+    "icechunk": {
+      "href": "s3://dynamical-noaa-gfs/noaa-gfs-forecast/v0.2.7.icechunk/",
+      "type": "application/x-icechunk",
+      "title": "Icechunk v2 repository",
+      "xarray:open_kwargs": {"engine": "zarr"},
+      "xarray:storage_options": {"anon": true, "client_kwargs": {"region_name": "us-west-2"}},
+      "roles": ["data"]
+    }
+  },
+  "links": [
+    {"rel": "root", "href": "https://stac.dynamical.org/catalog.json", "type": "application/json"},
+    {"rel": "self", "href": "https://stac.dynamical.org/noaa-gfs-forecast/collection.json", "type": "application/json"},
+    {"rel": "parent", "href": "https://stac.dynamical.org/catalog.json", "type": "application/json"},
+    {"rel": "about", "href": "https://dynamical.org/catalog/noaa-gfs-forecast/", "type": "text/html", "title": "Dataset documentation"},
+    {"rel": "example", "href": "https://github.com/dynamical-org/notebooks/blob/main/noaa-gfs-forecast.ipynb", "type": "application/x-ipynb+json", "title": "Quickstart (GitHub)"}
+  ]
+}

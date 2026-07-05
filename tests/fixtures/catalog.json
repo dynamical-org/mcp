@@ -1,0 +1,33 @@
+{
+  "type": "Catalog",
+  "id": "dynamical-org",
+  "stac_version": "1.1.0",
+  "description": "Cloud-optimized weather and climate datasets from dynamical.org",
+  "title": "dynamical.org STAC Catalog",
+  "links": [
+    {
+      "rel": "root",
+      "href": "https://stac.dynamical.org/catalog.json",
+      "type": "application/json",
+      "title": "dynamical.org STAC Catalog"
+    },
+    {
+      "rel": "child",
+      "href": "https://stac.dynamical.org/noaa-gfs-forecast/collection.json",
+      "type": "application/json",
+      "title": "NOAA GFS forecast"
+    },
+    {
+      "rel": "child",
+      "href": "https://stac.dynamical.org/noaa-gfs-analysis/collection.json",
+      "type": "application/json",
+      "title": "NOAA GFS analysis"
+    },
+    {
+      "rel": "self",
+      "href": "https://stac.dynamical.org/catalog.json",
+      "type": "application/json",
+      "title": "dynamical.org STAC Catalog"
+    }
+  ]
+}
