@@ -9,6 +9,10 @@ dependencies = [
     "httpx>=0.27",
 ]
 
+[project.urls]
+Homepage = "https://dynamical.org/catalog"
+Repository = "https://github.com/dynamical-org/mcp"
+
 [dependency-groups]
 dev = [
     "pytest>=8",

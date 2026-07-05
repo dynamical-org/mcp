@@ -12,6 +12,8 @@ import os
 
 from mcp.server.fastmcp import FastMCP
 
+from server import __version__
+
 mcp = FastMCP(
     name="dynamical-catalog",
     instructions=(
@@ -21,10 +23,16 @@ mcp = FastMCP(
         "cadence, get a ready-to-run code snippet for opening its data, and check "
         "recent forecast-run freshness."
     ),
+    website_url="https://dynamical.org/catalog",
     host=os.environ.get("HOST", "0.0.0.0"),
     port=int(os.environ.get("PORT", 8000)),
     stateless_http=True,
 )
+
+# FastMCP's constructor doesn't expose the server version yet (mcp 1.28), and
+# when it's unset the SDK advertises its *own* package version to clients on
+# `initialize`. Set it explicitly so `serverInfo.version` reflects this app.
+mcp._mcp_server.version = __version__
 
 # Importing tool modules registers them on `mcp` via `register_tool`.
 from server.tools import (  # noqa: E402,F401  (import for registration side effects)
