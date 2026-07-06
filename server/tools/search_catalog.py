@@ -1,12 +1,14 @@
 from __future__ import annotations
 
+from typing import Any
+
 from server import stac_client
 from server.app import mcp
 from server.registry import register_tool
 
 
 @register_tool(mcp)
-async def search_catalog(query: str, limit: int = 5) -> dict:
+async def search_catalog(query: str, limit: int = 5) -> dict[str, Any]:
     """Search dynamical.org's STAC catalog of cloud-optimized weather and
     climate datasets.
 

@@ -1,5 +1,6 @@
 import pytest
 
+from server.app import mcp
 from server.stac_client import CollectionNotFoundError
 from server.tools.get_access_pattern import get_access_pattern
 from server.tools.get_dataset_info import get_dataset_info
@@ -83,3 +84,28 @@ async def test_list_recent_runs_unmonitored(mock_status):
     result = await list_recent_runs(collection_id="noaa-gfs-analysis")
     assert result["monitored"] is False
     assert "noaa-gfs-forecast" in result["monitored_collection_ids"]
+
+
+async def test_all_tools_advertise_output_schema():
+    """Every tool returns `dict[str, Any]`, so FastMCP should advertise an
+    outputSchema for each -- clients that prefer structured output get one."""
+    tools = {tool.name: tool for tool in await mcp.list_tools()}
+    assert set(tools) == {
+        "search_catalog",
+        "get_dataset_info",
+        "get_access_pattern",
+        "list_recent_runs",
+    }
+    for tool in tools.values():
+        assert tool.outputSchema is not None, tool.name
+
+
+async def test_call_tool_populates_structured_content(mock_stac):
+    """A tool call over the MCP layer returns both unstructured text and
+    structured content (the dict itself, unwrapped)."""
+    unstructured, structured = await mcp.call_tool(
+        "get_dataset_info", {"collection_id": "noaa-gfs-forecast"}
+    )
+    assert unstructured  # text content still present for back-compat
+    assert structured["collection_id"] == "noaa-gfs-forecast"
+    assert structured["model_name"] == "NOAA GFS"
