@@ -123,8 +123,37 @@ mcp-publisher publish             # validates ./server.json and registers it
 
 `server.json`'s `$schema` pins a dated registry schema version; if
 validation fails after a registry schema bump, regenerate the skeleton with
-`mcp-publisher init` and re-fill the fields. Keep `version` in `server.json`,
-`pyproject.toml`, and `server/__init__.py` in lockstep on each release.
+`mcp-publisher init` and re-fill the fields. The registry's only searchable
+text is `name`, `title`, and the 100-char `description` (there are no
+keyword/tag fields), so those carry the discoverability weight — keep the
+`description` dense with the terms a user would search (model names,
+"weather", "forecast").
+
+## Distributing as a Claude Code plugin
+
+The registry reaches any MCP client (including plain chat). To *also* reach
+Claude Code users with a one-command install, this repo doubles as a
+single-plugin marketplace: [`.claude-plugin/marketplace.json`](.claude-plugin/marketplace.json)
+lists one plugin, [`.claude-plugin/plugin.json`](.claude-plugin/plugin.json)
+describes it, and [`.mcp.json`](.mcp.json) points it at the deployed remote
+server. Unlike the registry manifest, plugin metadata *does* support
+`keywords`/`tags`/`category`, so those are filled in for the plugin channel.
+
+Once the server is deployed and its URL is set in `.mcp.json`, users install
+it with:
+
+```bash
+/plugin marketplace add dynamical-org/mcp
+/plugin install dynamical-catalog@dynamical-org
+```
+
+To reach the broader community marketplace, submit the plugin to
+`claude-plugins-community`.
+
+Keep `version` in lockstep across `server.json`, `pyproject.toml`,
+`server/__init__.py`, `.claude-plugin/plugin.json`, and
+`.claude-plugin/marketplace.json` on each release, and update the deployed
+URL in **both** `server.json` and `.mcp.json`.
 
 ## Configuration
 
@@ -148,4 +177,8 @@ server/
 tests/              pytest + respx, fixtures under tests/fixtures/
 modal_app.py        Modal deployment (see above)
 server.json         Official MCP registry manifest (see above)
+.mcp.json           Remote-server config bundled by the Claude Code plugin
+.claude-plugin/
+  plugin.json       Claude Code plugin manifest
+  marketplace.json  Single-plugin marketplace listing this repo
 ```

@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "dynamical-catalog": {
+      "type": "http",
+      "url": "https://mcp.dynamical.org/mcp"
+    }
+  }
+}
