@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from typing import Any
 from urllib.parse import urlparse
 
 from server import stac_client
@@ -64,7 +65,7 @@ def _low_level_snippet(
 
 
 @register_tool(mcp)
-async def get_access_pattern(collection_id: str) -> dict:
+async def get_access_pattern(collection_id: str) -> dict[str, Any]:
     """Get the storage URI and working code for opening a dynamical.org
     dataset's data.
 
