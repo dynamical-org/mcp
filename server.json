@@ -1,7 +1,8 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.dynamical-org/mcp",
-  "description": "Search dynamical.org's public STAC catalog of cloud-optimized weather and climate datasets.",
+  "title": "dynamical.org Weather & Climate Catalog",
+  "description": "Search dynamical.org's open STAC catalog of weather & climate datasets (GFS, ECMWF, HRRR).",
   "version": "0.1.0",
   "websiteUrl": "https://dynamical.org/catalog",
   "repository": {
