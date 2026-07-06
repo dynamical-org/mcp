@@ -5,19 +5,14 @@ Mirrors the deployment shape used by wxopticon
 wrapping a single ASGI function, kept warm with `min_containers=1` so a
 Claude (or other MCP client) connection doesn't pay a cold start.
 
-The only secret is `betterstack-dynamical-mcp` (log streaming + error
-tracking, from the Better Stack `dynamical-mcp` source/errors app; see
-server/obs.py). Every tool itself is a public, unauthenticated proxy over
-dynamical.org's own public STAC catalog and status feed, so there's nothing
-else to inject. v2's planned GitHub OAuth gating would add a second
-`modal.Secret` here for the OAuth app's client id/secret, same pattern as
-wxopticon's `wxopticon-pub` secret.
+v1 has no secrets: every tool is a public, unauthenticated proxy over
+dynamical.org's own public STAC catalog and status feed, and the Better Stack
+telemetry config is hardcoded (private repo; see server/obs.py), so there's
+nothing to inject. v2's planned GitHub OAuth gating would add a `modal.Secret`
+here for the OAuth app's client id/secret, same pattern as wxopticon's
+`wxopticon-pub` secret.
 
 Setup:
-    modal secret create betterstack-dynamical-mcp (keys: BETTERSTACK_SOURCE_TOKEN,
-        BETTERSTACK_INGESTING_HOST, BETTERSTACK_ERRORS_DSN — the first two from
-        the Better Stack `dynamical-mcp` log source; the DSN from a Better Stack
-        Errors app, optional and no-op if omitted; see server/obs.py)
     modal deploy modal_app.py
 
 mcp.dynamical.org setup (one-time, manual): Modal provisions TLS for the
@@ -50,7 +45,6 @@ image = (
 
 @app.function(
     image=image,
-    secrets=[modal.Secret.from_name("betterstack-dynamical-mcp")],
     # Kept warm: an MCP client's initialize/list_tools round trip shouldn't
     # pay a cold start, same rationale as wxopticon's pub_api.
     min_containers=1,
