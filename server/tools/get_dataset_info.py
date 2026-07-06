@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from mcp.types import ToolAnnotations
+
 from server import stac_client
 from server.app import mcp
 from server.registry import register_tool
@@ -11,7 +13,11 @@ def _first(summaries: dict, key: str) -> str | None:
     return next(iter(summaries.get(key, [])), None)
 
 
-@register_tool(mcp)
+@register_tool(
+    mcp,
+    title="Get dataset details",
+    annotations=ToolAnnotations(readOnlyHint=True, openWorldHint=True),
+)
 async def get_dataset_info(collection_id: str) -> dict[str, Any]:
     """Get documentation, spatial/time resolution, domain, and update cadence
     for one dynamical.org dataset.

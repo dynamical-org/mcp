@@ -2,12 +2,18 @@ from __future__ import annotations
 
 from typing import Any
 
+from mcp.types import ToolAnnotations
+
 from server import status_client
 from server.app import mcp
 from server.registry import register_tool
 
 
-@register_tool(mcp)
+@register_tool(
+    mcp,
+    title="List recent forecast runs",
+    annotations=ToolAnnotations(readOnlyHint=True, openWorldHint=True),
+)
 async def list_recent_runs(collection_id: str, limit: int = 10) -> dict[str, Any]:
     """Check run freshness and arrival status for a dynamical.org forecast
     dataset, from the same public feed status.dynamical.org's dashboard polls.
