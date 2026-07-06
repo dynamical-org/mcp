@@ -3,6 +3,8 @@ from __future__ import annotations
 from typing import Any
 from urllib.parse import urlparse
 
+from mcp.types import ToolAnnotations
+
 from server import stac_client
 from server.app import mcp
 from server.registry import register_tool
@@ -64,7 +66,11 @@ def _low_level_snippet(
     return {"format": kind, "code": code}
 
 
-@register_tool(mcp)
+@register_tool(
+    mcp,
+    title="Get data access snippet",
+    annotations=ToolAnnotations(readOnlyHint=True, openWorldHint=True),
+)
 async def get_access_pattern(collection_id: str) -> dict[str, Any]:
     """Get the storage URI and working code for opening a dynamical.org
     dataset's data.

@@ -100,6 +100,15 @@ async def test_all_tools_advertise_output_schema():
         assert tool.outputSchema is not None, tool.name
 
 
+async def test_all_tools_annotated_read_only():
+    """Every tool declares a title and readOnlyHint=True — required for the
+    Anthropic Connectors Directory, and correct since all four only fetch."""
+    for tool in await mcp.list_tools():
+        assert tool.title, tool.name
+        assert tool.annotations is not None, tool.name
+        assert tool.annotations.readOnlyHint is True, tool.name
+
+
 async def test_call_tool_populates_structured_content(mock_stac):
     """A tool call over the MCP layer returns both unstructured text and
     structured content (the dict itself, unwrapped)."""
