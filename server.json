@@ -4,11 +4,7 @@
   "title": "dynamical.org Weather & Climate Catalog",
   "description": "Search dynamical.org's open STAC catalog of weather & climate datasets (GFS, ECMWF, HRRR).",
   "version": "0.1.0",
-  "websiteUrl": "https://dynamical.org/catalog",
-  "repository": {
-    "url": "https://github.com/dynamical-org/mcp",
-    "source": "github"
-  },
+  "websiteUrl": "https://dynamical.org",
   "remotes": [
     {
       "type": "streamable-http",
