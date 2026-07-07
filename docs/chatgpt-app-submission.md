@@ -1,13 +1,13 @@
 # ChatGPT app submission kit
 
 Everything needed to submit this server to the ChatGPT app directory (OpenAI
-Apps SDK). Code-side prerequisites are done in v0.2.0; the rest is portal work
-in the OpenAI Platform Dashboard.
+Apps SDK). The code-side prerequisites are done; the rest is portal work in the
+OpenAI Platform Dashboard.
 
 ## Server facts
 
 - **MCP endpoint:** `https://mcp.dynamical.org/mcp` (streamable HTTP, public, no auth)
-- **Version:** 0.2.0
+- **Version:** 0.1.2
 - **Base URL is permanent** once published — updates are metadata snapshots, not URL changes.
 
 ## Directory metadata (paste into the dashboard draft)
@@ -26,24 +26,19 @@ in the OpenAI Platform Dashboard.
 
 | Tool | Purpose |
 | --- | --- |
-| `search` | Deep-research entry: query → `{id, title, url}` results |
-| `fetch` | Deep-research retrieval: id → full dataset doc `{id, title, text, url, metadata}` |
-| `search_catalog` | Ranked results with variables/resolution inline |
-| `get_dataset_info` | Full structured dataset metadata |
+| `search_catalog` | Search datasets by model / variable / region / resolution; ranked results |
+| `get_dataset_info` | Full structured dataset metadata (domain, resolution, variables, docs) |
 | `get_access_pattern` | Ready-to-run `dynamical_catalog.open(...)` + low-level snippet |
 | `list_recent_runs` | Forecast run freshness from status.dynamical.org |
-
-`search` + `fetch` make the app work in **ChatGPT deep research**; the other
-four serve richer agentic/chat use.
 
 ## Reviewer test cases / screenshot prompts
 
 Run these in Developer Mode and screenshot each (tool call + result):
 
-1. "What weather datasets does dynamical.org have for the continental US?" → `search_catalog`/`search` → HRRR, MRMS, etc.
+1. "What weather datasets does dynamical.org have for the continental US?" → `search_catalog` → HRRR, MRMS, etc.
 2. "How do I open the NOAA GFS forecast dataset in Python?" → `get_access_pattern` → `dynamical_catalog.open("noaa-gfs-forecast")`.
 3. "Is the latest NOAA GFS forecast run available yet?" → `list_recent_runs`.
-4. (Deep research) "Compare the ECMWF AIFS ENS and NOAA GFS forecast datasets." → `search` then `fetch`.
+4. "What variables and resolution does the ECMWF AIFS ENS forecast have?" → `get_dataset_info`.
 
 ## Submission checklist (mapped to status)
 
@@ -67,6 +62,10 @@ Run these in Developer Mode and screenshot each (tool call + result):
 4. **Scan** the MCP endpoint (captures tools/schemas/annotations into a version snapshot).
 5. **Submit for review** → note the Case ID emailed back; track in the dashboard.
 6. On approval, **Publish**. Later changes: new draft → scan → submit → publish (same base URL).
+
+Note: `search`/`fetch` tools (the ChatGPT *deep research* convention) are
+intentionally **not** implemented — they aren't required for the app directory,
+only for the separate deep-research connector type.
 
 Docs: https://developers.openai.com/apps-sdk/app-submission-guidelines ·
 https://developers.openai.com/apps-sdk/deploy/submission
