@@ -1,6 +1,6 @@
 [project]
 name = "dynamical-mcp-server"
-version = "0.2.0"
+version = "0.1.2"
 description = "Remote MCP server exposing dynamical.org's public STAC catalog and docs as LLM tools."
 readme = "README.md"
 requires-python = ">=3.11"
