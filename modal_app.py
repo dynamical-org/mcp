@@ -53,6 +53,7 @@ image = (
 def mcp_app():
     from server import obs
     from server.app import mcp
+    from server.web import ContentSecurityPolicyMiddleware
 
     # Long-running ASGI app: configure once at startup, no per-request flush.
     # The Logtail handler streams from its background thread; Sentry's Starlette
@@ -60,7 +61,9 @@ def mcp_app():
     obs.setup_logging()
     obs.init_sentry()
 
-    return mcp.streamable_http_app()
+    # Wrap (don't add_middleware) so we stay a pure-ASGI passthrough that
+    # doesn't buffer the streamable-HTTP SSE responses.
+    return ContentSecurityPolicyMiddleware(mcp.streamable_http_app())
 
 
 @app.local_entrypoint()
