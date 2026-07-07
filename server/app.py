@@ -40,4 +40,5 @@ from server.tools import (  # noqa: E402,F401  (import for registration side eff
     get_dataset_info,
     list_recent_runs,
     search_catalog,
+    search_fetch,
 )

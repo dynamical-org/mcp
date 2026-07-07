@@ -27,6 +27,11 @@ fetches it live (with a short TTL cache) rather than embedding a snapshot.
   arrival status from the same public feed
   [status.dynamical.org](https://status.dynamical.org)'s dashboard polls.
   Only forecast collections are pipeline-monitored today.
+- **`search(query)`** / **`fetch(id)`** — the `{id, title, url}` →
+  `{id, title, text, url, metadata}` pair ChatGPT deep research looks for by
+  name; thin adapters over `search_catalog`/`get_dataset_info` (see
+  [`docs/chatgpt-app-submission.md`](docs/chatgpt-app-submission.md)). Rich
+  clients should prefer the detailed tools above.
 
 v1 ships with no auth — every tool above is public. v2 is planned to add
 optional GitHub OAuth (a Bearer token) gating additional premium tools; see

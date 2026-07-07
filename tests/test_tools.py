@@ -6,6 +6,7 @@ from server.tools.get_access_pattern import get_access_pattern
 from server.tools.get_dataset_info import get_dataset_info
 from server.tools.list_recent_runs import list_recent_runs
 from server.tools.search_catalog import search_catalog
+from server.tools.search_fetch import fetch, search
 
 
 async def test_search_catalog_matches_variable_and_model(mock_stac):
@@ -95,9 +96,37 @@ async def test_all_tools_advertise_output_schema():
         "get_dataset_info",
         "get_access_pattern",
         "list_recent_runs",
+        "search",
+        "fetch",
     }
     for tool in tools.values():
         assert tool.outputSchema is not None, tool.name
+
+
+async def test_search_returns_id_title_url(mock_stac):
+    """Deep-research `search` returns {id, title, url} triples."""
+    result = await search(query="temperature_2m")
+    assert result["results"]
+    first = result["results"][0]
+    assert set(first) == {"id", "title", "url"}
+    ids = [r["id"] for r in result["results"]]
+    assert "noaa-gfs-forecast" in ids
+    assert first["url"] == f"https://dynamical.org/catalog/{first['id']}/"
+
+
+async def test_fetch_returns_document(mock_stac):
+    """Deep-research `fetch` returns {id, title, text, url, metadata}."""
+    doc = await fetch(id="noaa-gfs-forecast")
+    assert set(doc) == {"id", "title", "text", "url", "metadata"}
+    assert doc["id"] == "noaa-gfs-forecast"
+    assert doc["title"] == "NOAA GFS forecast"
+    assert "temperature_2m" in doc["text"]
+    assert doc["metadata"]["model_name"] == "NOAA GFS"
+
+
+async def test_fetch_unknown_id(mock_stac):
+    with pytest.raises(CollectionNotFoundError):
+        await fetch(id="does-not-exist")
 
 
 async def test_all_tools_annotated_read_only():
