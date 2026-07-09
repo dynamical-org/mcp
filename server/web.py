@@ -29,6 +29,42 @@ Send = Callable[[Message], Awaitable[None]]
 _MAX_PARSED_BODY = 64 * 1024
 
 
+class RejectGetStreamMiddleware:
+    """Reject the standalone ``GET`` SSE stream with ``405 Method Not Allowed``.
+
+    Streamable-HTTP MCP clients open ``GET /mcp`` (``Accept: text/event-stream``)
+    as a standing server→client channel for server-initiated messages. With
+    ``stateless_http=True`` this server has no session and never originates such
+    messages, so that stream just idles open until Modal reaps it at the
+    per-request timeout — logged as a timeout, and churning reconnects.
+
+    The MCP spec lets a server that offers no server-initiated SSE answer such a
+    GET with ``405``; clients handle it and simply don't hold the stream open.
+    Only ``GET`` is rejected — ``POST`` (JSON-RPC) passes through untouched.
+    """
+
+    def __init__(self, app: Any) -> None:
+        self.app = app
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] != "http" or scope["method"] != "GET":
+            await self.app(scope, receive, send)
+            return
+
+        await send(
+            {
+                "type": "http.response.start",
+                "status": 405,
+                "headers": [
+                    (b"content-type", b"text/plain; charset=utf-8"),
+                    (b"allow", b"POST"),
+                ],
+            }
+        )
+        body = b"Method Not Allowed: this server offers no GET SSE stream"
+        await send({"type": "http.response.body", "body": body})
+
+
 class ContentSecurityPolicyMiddleware:
     """Append a ``Content-Security-Policy`` header to every HTTP response."""
 
