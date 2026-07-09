@@ -14,9 +14,11 @@ change.
 
 from __future__ import annotations
 
+import functools
 from collections.abc import Callable
 from typing import Any, TypeVar
 
+import sentry_sdk
 from mcp.server.fastmcp import FastMCP
 
 F = TypeVar("F", bound=Callable[..., Any])
@@ -34,6 +36,23 @@ def register_tool(
 
     def decorator(fn: F) -> F:
         fn.__mcp_requires_auth__ = requires_auth  # type: ignore[attr-defined]
-        return mcp.tool(**tool_kwargs)(fn)
+
+        # The MCP SDK catches every tool exception and returns it to the client
+        # as a JSON-RPC `isError` result over HTTP 200 (see mcp.server.lowlevel
+        # `_make_error_result`). Because nothing propagates as an unhandled
+        # request error, Sentry's Starlette integration never fires and tool
+        # failures are invisible to Better Stack. Capture them explicitly here,
+        # then re-raise unchanged so the SDK still builds the client's error
+        # result. `capture_exception` is a no-op when Sentry isn't initialised
+        # (local dev / tests), so this stays inert outside the deployed app.
+        @functools.wraps(fn)
+        async def wrapper(*args: Any, **kwargs: Any) -> Any:
+            try:
+                return await fn(*args, **kwargs)
+            except Exception:
+                sentry_sdk.capture_exception()
+                raise
+
+        return mcp.tool(**tool_kwargs)(wrapper)  # type: ignore[return-value]
 
     return decorator
