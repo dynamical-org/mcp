@@ -49,6 +49,14 @@ image = (
     # pay a cold start, same rationale as wxopticon's pub_api.
     min_containers=1,
 )
+# Without this Modal assigns one input per container, so every concurrent
+# request — including the long-lived SSE connections MCP clients hold open —
+# pins its own container and Modal scales out to several, which then idle-exit
+# and spew "background thread still running" / "cancellation signal" warnings.
+# Every tool here is a stateless, fully-async I/O proxy over public HTTP APIs
+# (shared httpx.AsyncClient, stateless_http=True), so one container can serve
+# many concurrent requests. This collapses the fleet back to min_containers.
+@modal.concurrent(max_inputs=100)
 @modal.asgi_app(custom_domains=["mcp.dynamical.org"])
 def mcp_app():
     from server import obs
