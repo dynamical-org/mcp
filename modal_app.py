@@ -61,7 +61,11 @@ image = (
 def mcp_app():
     from server import obs
     from server.app import mcp
-    from server.web import ContentSecurityPolicyMiddleware, RequestLoggingMiddleware
+    from server.web import (
+        ContentSecurityPolicyMiddleware,
+        RejectGetStreamMiddleware,
+        RequestLoggingMiddleware,
+    )
 
     # Long-running ASGI app: configure once at startup, no per-request flush.
     # The Logtail handler streams from its background thread; tool exceptions are
@@ -71,8 +75,11 @@ def mcp_app():
 
     # Wrap (don't add_middleware) so we stay a pure-ASGI passthrough that
     # doesn't buffer the streamable-HTTP SSE responses. Request logging is
-    # outermost so its duration covers the whole stack.
-    return RequestLoggingMiddleware(ContentSecurityPolicyMiddleware(mcp.streamable_http_app()))
+    # outermost so its duration covers the whole stack; the GET-stream reject
+    # is innermost so its 405 still gets logged and carries the CSP header.
+    return RequestLoggingMiddleware(
+        ContentSecurityPolicyMiddleware(RejectGetStreamMiddleware(mcp.streamable_http_app()))
+    )
 
 
 @app.local_entrypoint()

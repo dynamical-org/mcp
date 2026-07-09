@@ -3,6 +3,7 @@ import json
 from server.web import (
     DEFAULT_CSP,
     ContentSecurityPolicyMiddleware,
+    RejectGetStreamMiddleware,
     RequestLoggingMiddleware,
     _summarize_jsonrpc,
 )
@@ -81,6 +82,44 @@ def test_summarize_jsonrpc_non_json_is_empty():
     assert _summarize_jsonrpc(b"not json") == {}
     # A JSON-RPC batch (list) is not summarized rather than crashing.
     assert _summarize_jsonrpc(b"[]") == {}
+
+
+async def test_reject_get_stream_returns_405():
+    """A GET (the standalone SSE stream) is short-circuited with 405, never
+    reaching the wrapped app."""
+    reached = {"app": False}
+
+    async def app(scope, receive, send):
+        reached["app"] = True
+
+    sent = {}
+
+    async def send(message):
+        if message["type"] == "http.response.start":
+            sent["status"] = message["status"]
+            sent["headers"] = message["headers"]
+
+    await RejectGetStreamMiddleware(app)({"type": "http", "method": "GET"}, None, send)
+
+    assert sent["status"] == 405
+    assert (b"allow", b"POST") in sent["headers"]
+    assert reached["app"] is False
+
+
+async def test_reject_get_stream_passes_post_through():
+    """POST (JSON-RPC) is untouched by the GET-reject shim."""
+    status = await _drive_post(RejectGetStreamMiddleware(_reading_app), b"{}", method="POST")
+    assert status["status"] == 200
+
+
+async def test_reject_get_stream_passthrough_for_non_http_scopes():
+    seen = {}
+
+    async def lifespan_app(scope, receive, send):
+        seen["type"] = scope["type"]
+
+    await RejectGetStreamMiddleware(lifespan_app)({"type": "lifespan"}, None, None)
+    assert seen["type"] == "lifespan"
 
 
 async def _drive_post(app, body, method="POST"):
