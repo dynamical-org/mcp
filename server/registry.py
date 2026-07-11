@@ -56,3 +56,44 @@ def register_tool(
         return mcp.tool(**tool_kwargs)(wrapper)  # type: ignore[return-value]
 
     return decorator
+
+
+def register_app_tool(
+    mcp: FastMCP,
+    *,
+    ui_resource_uri: str,
+    openai_output_template: str | None = None,
+    ui_visibility: list[str] | None = None,
+    meta: dict[str, Any] | None = None,
+    **tool_kwargs: Any,
+) -> Callable[[F], F]:
+    """Register a tool that renders an MCP Apps UI widget.
+
+    Layers the UI linkage on top of `register_tool` without changing it. The
+    widget is a `ui://` HTML resource (see `server.ui`); this attaches the
+    per-host `_meta` that points a host at that resource:
+
+    - `ui` / `io.modelcontextprotocol/ui` -- the MCP Apps extension (SEP-1865).
+      Both the short `ui` key and the fully-qualified extension key are emitted
+      so we're robust to the key shape the host actually matches on while the
+      spec settles.
+    - `openai/outputTemplate` -- the OpenAI Apps SDK (ChatGPT) equivalent,
+      pointing at the Skybridge variant of the same widget.
+
+    Passing `ui_visibility=["app"]` hides the tool from the model (app-only),
+    per the extension; omit it for the default `["model", "app"]`.
+    """
+    ui_meta: dict[str, Any] = {"resourceUri": ui_resource_uri}
+    if ui_visibility is not None:
+        ui_meta["visibility"] = ui_visibility
+
+    combined_meta: dict[str, Any] = {
+        "ui": ui_meta,
+        "io.modelcontextprotocol/ui": dict(ui_meta),
+    }
+    if openai_output_template is not None:
+        combined_meta["openai/outputTemplate"] = openai_output_template
+    if meta:
+        combined_meta.update(meta)
+
+    return register_tool(mcp, meta=combined_meta, **tool_kwargs)

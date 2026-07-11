@@ -2,7 +2,7 @@
   "name": "dynamical-catalog",
   "displayName": "dynamical.org Weather & Climate Catalog",
   "description": "Search dynamical.org's open STAC catalog of weather & climate datasets (GFS, ECMWF, HRRR).",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "author": {
     "name": "dynamical.org",
     "email": "feedback@dynamical.org"

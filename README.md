@@ -16,7 +16,13 @@ fetches it live (with a short TTL cache) rather than embedding a snapshot.
   variable, region, or resolution.
 - **`get_dataset_info(collection_id)`** — docs link, resolution, domain,
   update cadence, and variables for a dataset (e.g. `noaa-gfs-forecast`,
-  `noaa-hrrr-analysis`, `ecmwf-aifs-ens-forecast`).
+  `noaa-hrrr-analysis`, `ecmwf-aifs-ens-forecast`), plus a browser-openable
+  data-store URL and a hosted zarr-viewer deep-link. On hosts that support the
+  [MCP Apps extension](https://modelcontextprotocol.io/seps/1865-mcp-apps-interactive-user-interfaces-for-mcp)
+  (Claude) or the OpenAI Apps SDK (ChatGPT), this tool also renders an
+  **interactive map** widget — a dynamical.org-branded frame embedding the
+  [Source Cooperative zarr-viewer](https://source-cooperative.github.io/zarr-viewer/)
+  for the dataset's Icechunk/Zarr store (see [`server/ui/`](server/ui/)).
 - **`get_access_pattern(collection_id)`** — the recommended
   [`dynamical-catalog`](https://pypi.org/project/dynamical-catalog/) snippet
   (dynamical.org's own wrapper package, which reads the STAC catalog itself
@@ -174,6 +180,7 @@ server/
   stac_client.py    STAC catalog/collection fetching + parsing helpers
   status_client.py  status.dynamical.org pipeline feed client
   tools/            one module per MCP tool
+  ui/               MCP Apps UI widgets (interactive HTML resources)
 tests/              pytest + respx, fixtures under tests/fixtures/
 modal_app.py        Modal deployment (see above)
 server.json         Official MCP registry manifest (see above)

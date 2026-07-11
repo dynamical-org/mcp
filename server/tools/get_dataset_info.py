@@ -6,15 +6,18 @@ from mcp.types import ToolAnnotations
 
 from server import stac_client
 from server.app import mcp
-from server.registry import register_tool
+from server.registry import register_app_tool
+from server.ui import DATASET_MAP_MCP, DATASET_MAP_SKYBRIDGE
 
 
 def _first(summaries: dict, key: str) -> str | None:
     return next(iter(summaries.get(key, [])), None)
 
 
-@register_tool(
+@register_app_tool(
     mcp,
+    ui_resource_uri=DATASET_MAP_MCP,
+    openai_output_template=DATASET_MAP_SKYBRIDGE,
     title="Get dataset details",
     annotations=ToolAnnotations(readOnlyHint=True, openWorldHint=True),
 )
@@ -35,9 +38,11 @@ async def get_dataset_info(collection_id: str) -> dict[str, Any]:
     Returns:
         A dict with title/model name, prose descriptions, spatial and time
         domain/resolution, forecast range (for forecast datasets), license
-        and attribution, the dataset's variables, and links to its docs
-        page and example notebooks. Raises ValueError (listing valid ids)
-        if collection_id is unknown.
+        and attribution, the dataset's variables, links to its docs page and
+        example notebooks, and the dataset's browser-openable data store URL
+        plus a deep-link into the hosted zarr-viewer (which also backs the
+        interactive map widget this tool renders). Raises ValueError (listing
+        valid ids) if collection_id is unknown.
     """
     collection = await stac_client.get_collection(collection_id)
     summaries = collection.get("summaries", {})
@@ -74,4 +79,9 @@ async def get_dataset_info(collection_id: str) -> dict[str, Any]:
         # Prefer the collection's own `self` link so this stays correct if the
         # catalog is served from a different host (e.g. staging via config).
         "stac_collection_url": self_link["href"] if self_link else None,
+        # Browser-openable data store (https, derived from the s3:// asset) and
+        # a ready deep-link into the hosted zarr-viewer. The map widget renders
+        # from data_viewer_url; both are None if no store URL can be derived.
+        "data_store_url": stac_client.source_coop_https_url(collection),
+        "data_viewer_url": stac_client.zarr_viewer_url(collection),
     }

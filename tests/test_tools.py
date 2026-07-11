@@ -40,6 +40,17 @@ async def test_get_dataset_info_forecast_fields(mock_stac):
     assert info["example_notebooks"][0]["url"].endswith("noaa-gfs-forecast.ipynb")
 
 
+async def test_get_dataset_info_returns_data_store_and_viewer_urls(mock_stac):
+    info = await get_dataset_info(collection_id="noaa-gfs-forecast")
+    assert (
+        info["data_store_url"]
+        == "https://data.source.coop/dynamical/noaa-gfs-forecast/v0.2.7.icechunk"
+    )
+    assert info["data_viewer_url"].startswith(
+        "https://source-cooperative.github.io/zarr-viewer/?"
+    )
+
+
 async def test_get_dataset_info_analysis_has_no_forecast_fields(mock_stac):
     info = await get_dataset_info(collection_id="noaa-gfs-analysis")
     assert info["forecast_domain"] is None

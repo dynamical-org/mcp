@@ -40,6 +40,10 @@ image = (
         "sentry-sdk>=2.63.0",
     )
     .add_local_python_source("server")
+    # `add_local_python_source` mounts only .py, but the MCP Apps UI widgets
+    # (server/ui/*.html) are data files loaded via importlib.resources at
+    # runtime, so mount them alongside the package or they'd be missing.
+    .add_local_dir("server/ui", remote_path="/root/server/ui")
 )
 
 

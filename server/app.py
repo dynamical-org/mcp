@@ -41,3 +41,12 @@ from server.tools import (  # noqa: E402,F401  (import for registration side eff
     list_recent_runs,
     search_catalog,
 )
+
+# Register the MCP Apps UI widget resources (interactive map, etc.). The
+# `io.modelcontextprotocol/ui` extension is negotiated entirely client-side --
+# ServerCapabilities has no `extensions` field in mcp 1.28 and FastMCP exposes
+# no hook to advertise one, so hosts detect UI purely via the `ui://` resource
+# URIs, widget mimeTypes, and each tool's `_meta`. Nothing to declare here.
+from server.ui import register_app_resources  # noqa: E402
+
+register_app_resources(mcp)

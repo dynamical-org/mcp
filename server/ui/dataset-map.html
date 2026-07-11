@@ -1,0 +1,363 @@
+<!doctype html>
+<!-- data-theme is intentionally unset so prefers-color-scheme drives the
+     default; the host theme signal (if any) stamps data-theme at runtime. -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>dynamical.org dataset map</title>
+    <style>
+      /* dynamical.org brand tokens (from dynamical.org/main.css). Monochrome,
+         terminal aesthetic, IBM Plex Mono, small radii. Loaded from the system
+         font stack so the widget needs no font-network CSP entry; IBM Plex Mono
+         is used when present. */
+      :root {
+        --bg: #ffffff;
+        --text: #111111;
+        --link: #0b57d0;
+        --border: #111111;
+        --border-muted: #444444;
+        --surface-muted: #f7f7f7;
+        --muted-text: #666666;
+        --accent-green: #5bc54a;
+        --r-sm: 2.5px;
+        --r-md: 4px;
+        --r-lg: 6px;
+        --font: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas,
+          monospace;
+      }
+      :root[data-theme="dark"] {
+        --bg: #0f0f10;
+        --text: #e8e8ea;
+        --link: #8ab4f8;
+        --border: #e8e8ea;
+        --border-muted: #b5b5b5;
+        --surface-muted: #161618;
+        --muted-text: #b5b5b5;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"]) {
+          --bg: #0f0f10;
+          --text: #e8e8ea;
+          --link: #8ab4f8;
+          --border: #e8e8ea;
+          --border-muted: #b5b5b5;
+          --surface-muted: #161618;
+          --muted-text: #b5b5b5;
+        }
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+      }
+      body {
+        display: flex;
+        flex-direction: column;
+        min-height: 320px;
+        height: 100vh;
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--font);
+        font-size: 13px;
+        line-height: 1.45;
+      }
+
+      header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 12px;
+        border-bottom: 1px solid var(--border);
+        flex: 0 0 auto;
+      }
+      .mark {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+      .mark .glyph {
+        width: 12px;
+        height: 12px;
+        border: 1.5px solid var(--text);
+        border-radius: var(--r-sm);
+        display: inline-block;
+      }
+      .titles {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        flex: 1 1 auto;
+      }
+      .titles .name {
+        font-weight: 700;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .titles .sub {
+        color: var(--muted-text);
+        font-size: 11px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      a.button,
+      a.linkout {
+        color: var(--link);
+        text-decoration: none;
+        border: 1px solid var(--border-muted);
+        border-radius: var(--r-md);
+        padding: 4px 10px;
+        white-space: nowrap;
+        flex: 0 0 auto;
+      }
+      a.button:hover,
+      a.linkout:hover {
+        border-color: var(--link);
+      }
+
+      .stage {
+        position: relative;
+        flex: 1 1 auto;
+        min-height: 0;
+        background: var(--surface-muted);
+      }
+      iframe {
+        border: 0;
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+
+      .fallback {
+        position: absolute;
+        inset: 0;
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+        text-align: center;
+        padding: 24px;
+      }
+      body[data-mode="fallback"] iframe {
+        display: none;
+      }
+      body[data-mode="fallback"] .fallback {
+        display: flex;
+      }
+      body[data-mode="empty"] .stage {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      body[data-mode="empty"] iframe,
+      body[data-mode="empty"] .fallback {
+        display: none;
+      }
+      .empty-msg {
+        display: none;
+        color: var(--muted-text);
+        padding: 24px;
+        text-align: center;
+      }
+      body[data-mode="empty"] .empty-msg {
+        display: block;
+      }
+      .fallback a.button {
+        font-size: 14px;
+        padding: 8px 16px;
+      }
+      .hint {
+        color: var(--muted-text);
+        max-width: 42ch;
+      }
+
+      footer {
+        flex: 0 0 auto;
+        border-top: 1px solid var(--border-muted);
+        padding: 6px 12px;
+        color: var(--muted-text);
+        font-size: 11px;
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+      }
+      footer .avail {
+        color: var(--accent-green);
+      }
+    </style>
+  </head>
+  <body data-mode="empty">
+    <header>
+      <span class="mark"><span class="glyph"></span>dynamical.org</span>
+      <span class="titles">
+        <span class="name" id="ds-name">Dataset</span>
+        <span class="sub" id="ds-sub"></span>
+      </span>
+      <a class="linkout" id="open-tab" href="#" target="_blank" rel="noopener"
+        >Open in new tab ↗</a
+      >
+    </header>
+
+    <div class="stage">
+      <iframe
+        id="viewer"
+        title="zarr-viewer"
+        allow="fullscreen"
+        referrerpolicy="no-referrer-when-downgrade"
+      ></iframe>
+      <div class="fallback">
+        <div class="hint">
+          This host doesn't allow embedding the interactive viewer here.
+        </div>
+        <a class="button" id="fallback-link" href="#" target="_blank" rel="noopener"
+          >Open the full data viewer ↗</a
+        >
+      </div>
+      <div class="empty-msg">No data store is available for this dataset yet.</div>
+    </div>
+
+    <footer>
+      <span id="foot-domain"></span>
+      <span id="foot-res"></span>
+      <span class="avail" id="foot-store"></span>
+    </footer>
+
+    <script>
+      (function () {
+        "use strict";
+        var root = document.documentElement;
+        var body = document.body;
+
+        // --- Theme --------------------------------------------------------
+        function applyTheme(theme) {
+          if (theme === "dark" || theme === "light") {
+            root.setAttribute("data-theme", theme);
+          }
+        }
+        // OpenAI Apps SDK exposes theme on window.openai; MCP Apps pushes it
+        // via host context. Fall back to prefers-color-scheme (handled in CSS).
+        try {
+          if (window.openai && window.openai.theme) applyTheme(window.openai.theme);
+        } catch (e) {}
+
+        // --- Read the tool's structured output ----------------------------
+        // Sources, in priority order: OpenAI toolOutput, a test/host global,
+        // then a postMessage from the MCP Apps host bridge (handled below).
+        function readInitial() {
+          try {
+            if (window.openai && window.openai.toolOutput) return window.openai.toolOutput;
+          } catch (e) {}
+          if (window.__MCP_TOOL_OUTPUT__) return window.__MCP_TOOL_OUTPUT__;
+          return null;
+        }
+
+        function buildViewerUrl(data) {
+          if (!data) return null;
+          if (data.data_viewer_url) return data.data_viewer_url;
+          // Fallback: compose from the raw store URL if only that was provided.
+          if (!data.data_store_url) return null;
+          var base = "https://source-cooperative.github.io/zarr-viewer/";
+          var params = "url=" + encodeURIComponent(data.data_store_url);
+          var bbox = data.spatial_bbox;
+          if (bbox && bbox.length === 4) {
+            var lng = (bbox[0] + bbox[2]) / 2;
+            var lat = (bbox[1] + bbox[3]) / 2;
+            var lonSpan = Math.max(Math.abs(bbox[2] - bbox[0]), 1e-6);
+            var zoom = Math.max(1, Math.min(10, Math.round(Math.log2(360 / lonSpan)) + 2));
+            params +=
+              "&lng=" + lng.toFixed(4) + "&lat=" + lat.toFixed(4) + "&zoom=" + zoom;
+          }
+          return base + "?" + params + "&panel=open";
+        }
+
+        function render(data) {
+          if (!data) {
+            body.setAttribute("data-mode", "empty");
+            return;
+          }
+          var name = data.title || data.collection_id || "Dataset";
+          document.getElementById("ds-name").textContent = name;
+          var subBits = [];
+          if (data.model_name) subBits.push(data.model_name);
+          if (data.collection_id) subBits.push(data.collection_id);
+          document.getElementById("ds-sub").textContent = subBits.join(" · ");
+
+          if (data.spatial_domain)
+            document.getElementById("foot-domain").textContent = data.spatial_domain;
+          if (data.spatial_resolution)
+            document.getElementById("foot-res").textContent = data.spatial_resolution;
+
+          var url = buildViewerUrl(data);
+          if (!url) {
+            body.setAttribute("data-mode", "empty");
+            return;
+          }
+          document.getElementById("foot-store").textContent = "Icechunk store ●";
+          document.getElementById("open-tab").href = url;
+          document.getElementById("fallback-link").href = url;
+
+          body.setAttribute("data-mode", "embed");
+          var frame = document.getElementById("viewer");
+          frame.src = url;
+
+          // If the framed viewer never loads (host blocks nested iframes, e.g.
+          // some Apps SDK sandboxes), degrade to the deep-link button.
+          var loaded = false;
+          frame.addEventListener("load", function () {
+            loaded = true;
+          });
+          setTimeout(function () {
+            if (!loaded) body.setAttribute("data-mode", "fallback");
+          }, 6000);
+        }
+
+        // --- MCP Apps host bridge (best-effort) ---------------------------
+        // Ask a fullscreen layout and listen for a tool-result / host-context
+        // pushed over postMessage. Harmless where no such host exists.
+        function post(method, params) {
+          try {
+            window.parent.postMessage(
+              { jsonrpc: "2.0", id: Date.now(), method: method, params: params || {} },
+              "*"
+            );
+          } catch (e) {}
+        }
+        try {
+          if (window.openai && typeof window.openai.requestDisplayMode === "function") {
+            window.openai.requestDisplayMode({ mode: "fullscreen" });
+          } else {
+            post("ui/request-display-mode", { mode: "fullscreen" });
+          }
+        } catch (e) {}
+
+        window.addEventListener("message", function (ev) {
+          var msg = ev.data || {};
+          var m = msg.method || "";
+          var p = msg.params || {};
+          if (m.indexOf("host-context") !== -1) {
+            var ctx = p.hostContext || p;
+            if (ctx && ctx.theme) applyTheme(ctx.theme);
+          }
+          if (m.indexOf("tool-result") !== -1) {
+            var result = p.result || p;
+            var data =
+              (result && (result.structuredContent || result.toolOutput || result)) || null;
+            if (data) render(data);
+          }
+        });
+
+        // Initial paint from whatever is already available.
+        render(readInitial());
+      })();
+    </script>
+  </body>
+</html>

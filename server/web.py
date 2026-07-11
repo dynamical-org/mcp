@@ -14,9 +14,12 @@ from typing import Any
 
 logger = logging.getLogger(__name__)
 
-# No UI / no iframes: this endpoint serves only JSON-RPC over HTTP/SSE, so the
-# strictest policy is correct and satisfies the OpenAI app review's "CSP
-# defined" check. `frame-ancestors 'none'` also blocks clickjacking framing.
+# This endpoint serves only JSON-RPC over HTTP/SSE. The MCP Apps UI widgets are
+# rendered by the *host* in its own sandboxed iframe from the resource body --
+# they are never fetched from this endpoint -- and their allowed domains are
+# declared per-resource in `_meta` (see server/ui). So the strictest policy is
+# still correct here: it satisfies the OpenAI app review's "CSP defined" check,
+# and `frame-ancestors 'none'` blocks clickjacking of the API endpoint itself.
 DEFAULT_CSP = "default-src 'none'; frame-ancestors 'none'"
 
 Scope = dict[str, Any]

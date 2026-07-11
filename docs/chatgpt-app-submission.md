@@ -7,7 +7,7 @@ OpenAI Platform Dashboard.
 ## Server facts
 
 - **MCP endpoint:** `https://mcp.dynamical.org/mcp` (streamable HTTP, public, no auth)
-- **Version:** 0.1.2
+- **Version:** 0.2.0
 - **Base URL is permanent** once published — updates are metadata snapshots, not URL changes.
 
 ## Directory metadata (paste into the dashboard draft)
@@ -27,7 +27,7 @@ OpenAI Platform Dashboard.
 | Tool | Purpose |
 | --- | --- |
 | `search_catalog` | Search datasets by model / variable / region / resolution; ranked results |
-| `get_dataset_info` | Full structured dataset metadata (domain, resolution, variables, docs) |
+| `get_dataset_info` | Full structured dataset metadata (domain, resolution, variables, docs). Also renders an **interactive map** widget (Apps SDK `text/html+skybridge` template `ui://dynamical-catalog/dataset-map.skybridge.html`) embedding the hosted zarr-viewer, dynamical-branded. |
 | `get_access_pattern` | Ready-to-run `dynamical_catalog.open(...)` + low-level snippet |
 | `list_recent_runs` | Forecast run freshness from status.dynamical.org |
 

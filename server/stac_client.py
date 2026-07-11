@@ -35,7 +35,9 @@ schemas (2026-07-05):
 from __future__ import annotations
 
 import asyncio
+import math
 from typing import Any
+from urllib.parse import quote, urlparse
 
 from server import config
 from server.cache import TTLCache
@@ -126,6 +128,71 @@ def data_asset(collection: dict[str, Any]) -> tuple[str, dict[str, Any]]:
         key = next(iter(assets))
         return key, assets[key]
     raise ValueError(f"Collection {collection.get('id')!r} has no assets")
+
+
+def source_coop_https_url(collection: dict[str, Any]) -> str | None:
+    """Derive the public ``https://`` Source Cooperative URL for a collection's
+    data store from its ``s3://`` asset href.
+
+    STAC only publishes the ``s3://<bucket>/<prefix>`` URI (verified against the
+    live catalog), but the browser-based zarr-viewer needs an ``https://`` URL.
+    Every dynamical.org dataset lives under the single ``dynamical`` source.coop
+    account, so the mapping drops the per-model bucket and joins the object's
+    ``<prefix>`` onto ``config.SOURCE_COOP_DATA_BASE_URL`` -- e.g.
+    ``s3://dynamical-dwd-icon-eu/dwd-icon-eu-forecast-5-day/v0.2.0.icechunk/`` ->
+    ``https://data.source.coop/dynamical/dwd-icon-eu-forecast-5-day/v0.2.0.icechunk``.
+
+    Returns ``None`` for a non-``s3://`` href (e.g. a future asset already
+    published over https), in which case the raw href should be used as-is.
+    """
+    try:
+        _, asset = data_asset(collection)
+    except ValueError:
+        return None
+    href = asset.get("href", "")
+    parsed = urlparse(href)
+    if parsed.scheme != "s3":
+        return None
+    prefix = parsed.path.strip("/")
+    if not prefix:
+        return None
+    return f"{config.SOURCE_COOP_DATA_BASE_URL.rstrip('/')}/{prefix}"
+
+
+def _bbox(collection: dict[str, Any]) -> list[float] | None:
+    bbox = collection.get("extent", {}).get("spatial", {}).get("bbox", [])
+    return next(iter(bbox), None)
+
+
+def zarr_viewer_url(collection: dict[str, Any]) -> str | None:
+    """Build the hosted zarr-viewer deep-link for a collection's data store,
+    centred on its spatial extent.
+
+    Returns ``None`` if the store URL can't be derived. The camera (lng/lat/
+    zoom) is centred on the collection's bbox with a coarse zoom picked from the
+    longitude span, matching the ``?url=&lng=&lat=&zoom=&panel=open`` contract
+    the viewer expects.
+    """
+    store_url = source_coop_https_url(collection)
+    if store_url is None:
+        return None
+
+    base = config.ZARR_VIEWER_BASE_URL.rstrip("/") + "/"
+    params = f"url={quote(store_url, safe='')}"
+
+    bbox = _bbox(collection)
+    if bbox and len(bbox) == 4:
+        west, south, east, north = bbox
+        lng = round((west + east) / 2, 4)
+        lat = round((south + north) / 2, 4)
+        lon_span = max(abs(east - west), 1e-6)
+        # Coarse fit: one zoom level per halving of the world's 360deg width,
+        # nudged in by 2 so a continental span lands around z4 (matches the
+        # viewer's own default framing for e.g. ICON-EU).
+        zoom = max(1, min(10, round(math.log2(360 / lon_span)) + 2))
+        params += f"&lng={lng}&lat={lat}&zoom={zoom}"
+
+    return f"{base}?{params}&panel=open"
 
 
 def variable_summaries(collection: dict[str, Any]) -> list[dict[str, Any]]:

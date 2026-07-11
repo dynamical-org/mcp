@@ -10,6 +10,21 @@ STATUS_SUMMARY_URL = os.environ.get(
     "DYNAMICAL_STATUS_SUMMARY_URL", "https://assets.dynamical.org/wxopticon/summary.json"
 )
 
+# dynamical.org publishes its datasets to Source Cooperative under the `dynamical`
+# account. STAC assets only carry the `s3://<bucket>/<prefix>` URI; the browser-based
+# zarr-viewer needs an `https://` URL, which we derive as
+# `<SOURCE_COOP_DATA_BASE_URL>/<prefix>` (the per-model bucket name is dropped -- every
+# dataset lives under the one `dynamical` source.coop account). See
+# stac_client.source_coop_https_url.
+SOURCE_COOP_DATA_BASE_URL = os.environ.get(
+    "DYNAMICAL_SOURCE_COOP_DATA_BASE_URL", "https://data.source.coop/dynamical"
+)
+# The hosted zarr-viewer the dataset-map widget embeds/links to. Overridable so the
+# widget can be pointed at a fork or a pinned build.
+ZARR_VIEWER_BASE_URL = os.environ.get(
+    "DYNAMICAL_ZARR_VIEWER_BASE_URL", "https://source-cooperative.github.io/zarr-viewer/"
+)
+
 # STAC documents change on dataset releases (infrequent); poll modestly.
 STAC_CACHE_TTL_SECONDS = float(os.environ.get("DYNAMICAL_STAC_CACHE_TTL_SECONDS", 900))
 # The pipeline status feed is regenerated roughly every 15s upstream, but
