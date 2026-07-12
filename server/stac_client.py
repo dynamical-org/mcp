@@ -39,13 +39,14 @@ from typing import Any
 
 from server import config
 from server.cache import TTLCache
+from server.errors import ToolInputError
 from server.http import get_http_client
 
 _catalog_cache: TTLCache[dict[str, Any]] = TTLCache(config.STAC_CACHE_TTL_SECONDS)
 _collection_cache: TTLCache[dict[str, Any]] = TTLCache(config.STAC_CACHE_TTL_SECONDS)
 
 
-class CollectionNotFoundError(ValueError):
+class CollectionNotFoundError(ToolInputError):
     def __init__(self, collection_id: str, known_ids: list[str]):
         self.collection_id = collection_id
         self.known_ids = known_ids
