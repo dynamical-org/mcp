@@ -6,6 +6,7 @@ from mcp.types import ToolAnnotations
 
 from server import stac_client
 from server.app import mcp
+from server.errors import ToolInputError
 from server.registry import register_tool
 
 
@@ -38,7 +39,7 @@ async def search_catalog(query: str, limit: int = 5) -> dict[str, Any]:
     """
     query_tokens = [t for t in query.lower().split() if t]
     if not query_tokens:
-        raise ValueError("query must not be empty")
+        raise ToolInputError("query must not be empty")
 
     collections = await stac_client.get_all_collections()
 

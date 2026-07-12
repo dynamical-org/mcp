@@ -21,6 +21,8 @@ from typing import Any, TypeVar
 import sentry_sdk
 from mcp.server.fastmcp import FastMCP
 
+from server.errors import ToolInputError
+
 F = TypeVar("F", bound=Callable[..., Any])
 
 
@@ -49,6 +51,11 @@ def register_tool(
         async def wrapper(*args: Any, **kwargs: Any) -> Any:
             try:
                 return await fn(*args, **kwargs)
+            except ToolInputError:
+                # Expected bad client input (unknown id, empty query). Still
+                # propagate so the SDK returns a client error result, but don't
+                # report it to Sentry -- it's a 4xx, not a server fault.
+                raise
             except Exception:
                 sentry_sdk.capture_exception()
                 raise
