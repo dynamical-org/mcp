@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import logging
 import os
+from typing import Any
 
 _LOG_FORMAT = "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
 
@@ -109,6 +110,26 @@ def setup_logging() -> None:
         root.addHandler(handler)
 
 
+def _is_client_disconnect_noise(event: dict[str, Any]) -> bool:
+    """A client hanging up mid-request (bots/crawlers probing the stateless
+    endpoint) is expected, not a server fault, but the MCP SDK logs it at ERROR
+    in two places the logging integration turns into events: once as a
+    ``ClientDisconnect`` raised from reading the request body, and again as a
+    bare "Received exception from stream" log with no exception attached.
+    """
+    for value in event.get("exception", {}).get("values", ()):
+        if value.get("type") == "ClientDisconnect":
+            return True
+    message = event.get("logentry", {}).get("message", "")
+    return event.get("logger") == "mcp.server.lowlevel.server" and message.startswith(
+        "Received exception from stream"
+    )
+
+
+def _before_send(event: dict[str, Any], hint: dict[str, Any]) -> dict[str, Any] | None:
+    return None if _is_client_disconnect_noise(event) else event
+
+
 def init_sentry() -> None:
     """Initialize Sentry (the Better Stack "mcp" errors application).
 
@@ -127,4 +148,5 @@ def init_sentry() -> None:
         environment="production",
         traces_sample_rate=0.0,
         integrations=[LoggingIntegration(level=logging.INFO, event_level=logging.ERROR)],
+        before_send=_before_send,
     )
