@@ -1,7 +1,6 @@
 """Client for dynamical.org's public STAC catalog.
 
-Structure confirmed by fetching the live catalog before writing tool
-schemas (2026-07-05):
+The structure of the STAC catalog this client depends on:
 
 - The root (``STAC_ROOT_URL``) is a STAC ``Catalog`` whose only useful
   content is ``links`` with ``rel: child`` entries, one per dataset

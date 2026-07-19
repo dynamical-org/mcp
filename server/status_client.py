@@ -1,14 +1,13 @@
 """Client for dynamical.org's pipeline status feed.
 
 status.dynamical.org itself is a "wxopticon" FastAPI app whose useful
-endpoints (``/v1/catalog`` etc., discovered via its live ``/openapi.json``)
-require a GitHub-login session or admin token -- that's the subscription
-management API, not something a public v1 MCP server should depend on.
+endpoints (``/v1/catalog`` etc.) require a GitHub-login session or admin
+token -- that's the subscription management API, not something a public v1
+MCP server should depend on.
 
-The status page's own "arrivals" UI doesn't call that API either: per its
-``wxopticon.js`` source, it polls a public, unauthenticated static asset,
-regenerated continuously, at ``STATUS_SUMMARY_URL``. That's what we use
-here. Its shape (confirmed by fetching it live):
+The status page's own "arrivals" UI doesn't call that API either; it polls
+a public, unauthenticated static asset, regenerated continuously, at
+``STATUS_SUMMARY_URL``. That's what we use here. Its shape:
 
     {
       "generated_at": "<iso8601>",
