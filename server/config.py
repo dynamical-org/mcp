@@ -5,7 +5,9 @@ from __future__ import annotations
 import os
 
 STAC_ROOT_URL = os.environ.get("DYNAMICAL_STAC_ROOT_URL", "https://stac.dynamical.org/catalog.json")
-CATALOG_PAGE_BASE_URL = os.environ.get("DYNAMICAL_CATALOG_PAGE_BASE_URL", "https://dynamical.org/catalog")
+CATALOG_PAGE_BASE_URL = os.environ.get(
+    "DYNAMICAL_CATALOG_PAGE_BASE_URL", "https://dynamical.org/catalog"
+)
 STATUS_SUMMARY_URL = os.environ.get(
     "DYNAMICAL_STATUS_SUMMARY_URL", "https://assets.dynamical.org/wxopticon/summary.json"
 )
