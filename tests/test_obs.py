@@ -1,6 +1,6 @@
 import logging
 
-from server.obs import _DropCancellationNoise
+from server.obs import _before_send, _DropCancellationNoise
 
 
 def _record(msg: str, *args: object) -> logging.LogRecord:
@@ -22,3 +22,26 @@ def test_keeps_background_thread_canary():
 def test_keeps_ordinary_logs():
     f = _DropCancellationNoise()
     assert f.filter(_record("mcp_request")) is True
+
+
+def test_before_send_drops_client_disconnect_exception():
+    event = {"exception": {"values": [{"type": "ClientDisconnect", "value": ""}]}}
+    assert _before_send(event, {}) is None
+
+
+def test_before_send_drops_stream_exception_log():
+    event = {
+        "logger": "mcp.server.lowlevel.server",
+        "logentry": {"message": "Received exception from stream: "},
+    }
+    assert _before_send(event, {}) is None
+
+
+def test_before_send_keeps_unrelated_errors():
+    event = {"exception": {"values": [{"type": "ValueError", "value": "boom"}]}}
+    assert _before_send(event, {}) is event
+
+
+def test_before_send_keeps_unrelated_logger_messages():
+    event = {"logger": "server.web", "logentry": {"message": "mcp_request"}}
+    assert _before_send(event, {}) is event
