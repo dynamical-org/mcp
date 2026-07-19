@@ -1,9 +1,8 @@
 """Better Stack observability: log streaming (Logtail) + error tracking (Sentry).
 
-Mirrors dynamical-org/wxopticon's `obs.py`, but the Better Stack config is
-hardcoded below (this is a private repo) rather than injected via a Modal
-secret — matching how wxopticon hardcodes its Better Stack heartbeat URLs. Env
-vars still override the defaults, so a token can be rotated without a redeploy.
+The Better Stack config is hardcoded below (this is a private repo) rather than
+injected via a Modal secret. Env vars still override the defaults, so a token
+can be rotated without a redeploy.
 
 These helpers are only ever called from the deployed Modal ASGI app (see
 `modal_app.py`); local `uv run python -m server` and the test suite never invoke
@@ -13,10 +12,10 @@ Better Stack resources (team dynamical.org):
 - log source "mcp" (id 2576601) — Logtail log streaming
 - errors application "mcp" (id 2576604) — Sentry error tracking
 
-This server is a single long-running ASGI app (no cron containers), so unlike
-wxopticon there's no per-invocation `flush()` — the Logtail handler streams from
-its background thread for the lifetime of the container, and Sentry's Starlette
-integration captures unhandled request errors automatically.
+This server is a single long-running ASGI app (no cron containers), so there's
+no per-invocation `flush()` — the Logtail handler streams from its background
+thread for the lifetime of the container, and Sentry's Starlette integration
+captures unhandled request errors automatically.
 """
 
 from __future__ import annotations
