@@ -1,6 +1,6 @@
 import logging
 
-from server.obs import _before_send, _DropCancellationNoise
+from server.obs import _before_send, _before_send_log, _DropCancellationNoise
 
 
 def _record(msg: str, *args: object) -> logging.LogRecord:
@@ -45,3 +45,13 @@ def test_before_send_keeps_unrelated_errors():
 def test_before_send_keeps_unrelated_logger_messages():
     event = {"logger": "server.web", "logentry": {"message": "mcp_request"}}
     assert _before_send(event, {}) is event
+
+
+def test_before_send_log_drops_cancellation_signal():
+    log = {"body": "Received a cancellation signal while processing input (in-01ABC)"}
+    assert _before_send_log(log, {}) is None
+
+
+def test_before_send_log_keeps_ordinary_logs():
+    log = {"body": "mcp_request"}
+    assert _before_send_log(log, {}) is log
