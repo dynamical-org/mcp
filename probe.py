@@ -14,8 +14,7 @@ incident. No check-in is sent at the start of a run, so a hang surfaces as a
 missed check-in rather than a stuck `in_progress` one. The monitor lives in the
 `mcp` Sentry project, so its alerts route with this app's Slack channel.
 
-Deploy (manual — this repo has no deploy CI):
-    modal deploy probe.py
+Deployed by .github/workflows/deploy.yml on push to main (alongside the server).
 
 The DSN default is hardcoded below (matching server/obs.py's convention for
 this private repo); set SENTRY_DSN to override without a code change. The MCP
