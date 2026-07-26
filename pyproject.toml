@@ -5,12 +5,12 @@ description = "Remote MCP server exposing dynamical.org's public STAC catalog an
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "mcp[cli]>=1.28.0",
+    "mcp[cli]>=1.28.1",
     "httpx>=0.27",
     # Sentry telemetry (error tracking + Sentry Logs). Imported lazily in
     # server/obs.py, which is only called from the deployed Modal app, so local
     # dev and tests don't depend on Sentry being reachable.
-    "sentry-sdk>=2.63.0",
+    "sentry-sdk>=2.66.1",
 ]
 
 [project.urls]
@@ -21,9 +21,9 @@ Repository = "https://github.com/dynamical-org/mcp"
 dev = [
     "pytest>=8",
     "pytest-asyncio>=0.24",
-    "ruff>=0.6",
+    "ruff>=0.16.0",
     "respx>=0.21",
-    "modal>=1.4.1",
+    "modal>=1.5.3",
 ]
 
 [project.scripts]
