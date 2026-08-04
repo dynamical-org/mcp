@@ -43,7 +43,7 @@ def register_tool(
         # as a JSON-RPC `isError` result over HTTP 200 (see mcp.server.lowlevel
         # `_make_error_result`). Because nothing propagates as an unhandled
         # request error, Sentry's Starlette integration never fires and tool
-        # failures are invisible to Better Stack. Capture them explicitly here,
+        # failures are invisible to Sentry. Capture them explicitly here,
         # then re-raise unchanged so the SDK still builds the client's error
         # result. `capture_exception` is a no-op when Sentry isn't initialised
         # (local dev / tests), so this stays inert outside the deployed app.

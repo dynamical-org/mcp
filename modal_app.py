@@ -5,12 +5,11 @@ Mirrors the deployment shape used by wxopticon
 wrapping a single ASGI function, kept warm with `min_containers=1` so a
 Claude (or other MCP client) connection doesn't pay a cold start.
 
-v1 has no secrets: every tool is a public, unauthenticated proxy over
-dynamical.org's own public STAC catalog and status feed, and the Better Stack
-telemetry config is hardcoded (private repo; see server/obs.py), so there's
-nothing to inject. v2's planned GitHub OAuth gating would add a `modal.Secret`
-here for the OAuth app's client id/secret, same pattern as wxopticon's
-`wxopticon-pub` secret.
+v1 has no application secrets: every tool is a public, unauthenticated proxy
+over dynamical.org's own public STAC catalog and status feed. Sentry is
+configured separately with ``SENTRY_DSN`` in the deployment environment. v2's
+planned GitHub OAuth gating would add a `modal.Secret` here for the OAuth app's
+client id/secret, same pattern as wxopticon's `wxopticon-pub` secret.
 
 Setup:
     modal deploy modal_app.py
@@ -36,7 +35,6 @@ image = (
     .pip_install(
         "mcp[cli]>=1.28.0",
         "httpx>=0.27",
-        "logtail-python>=0.3.4",
         "sentry-sdk>=2.63.0",
     )
     .add_local_python_source("server")
@@ -67,9 +65,8 @@ def mcp_app():
         RequestLoggingMiddleware,
     )
 
-    # Long-running ASGI app: configure once at startup, no per-request flush.
-    # The Logtail handler streams from its background thread; tool exceptions are
-    # captured into Sentry at the registry choke point (see server/registry.py).
+    # Long-running ASGI app: configure logging and Sentry once at startup.
+    # Tool exceptions are captured at the registry choke point (see server/registry.py).
     obs.setup_logging()
     obs.init_sentry()
 

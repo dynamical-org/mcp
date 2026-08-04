@@ -121,9 +121,8 @@ class RequestLoggingMiddleware:
     """Emit one structured log line per HTTP request for traffic metrics.
 
     Fields (``mcp_method``, ``mcp_tool``, ``client_name``/``client_version``,
-    ``http_status``, ``duration_ms``) are passed via ``extra`` so the Logtail
-    handler promotes each to a top-level field in the Better Stack ``mcp``
-    source, which a dashboard charts by tool, by client, and over time.
+    ``http_status``, ``duration_ms``) are passed via ``extra`` so configured
+    log handlers can record them as structured fields.
 
     The request body is *observed* as the wrapped app reads it (a ``receive``
     tap) rather than buffered-and-replayed: fabricating messages would break

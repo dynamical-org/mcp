@@ -8,7 +8,7 @@ from server.registry import register_tool
 async def test_tool_input_error_is_reraised_but_not_captured(monkeypatch):
     """A ToolInputError is a client-input (4xx) error: it must still propagate
     so the SDK builds the client error result, but it is NOT a server fault and
-    must not be reported to Sentry/Better Stack (otherwise bad ids like 'test'
+    must not be reported to Sentry (otherwise bad ids like 'test'
     become error noise)."""
     captured = []
     monkeypatch.setattr(registry.sentry_sdk, "capture_exception", lambda: captured.append(True))
@@ -31,7 +31,7 @@ async def test_tool_input_error_is_reraised_but_not_captured(monkeypatch):
 async def test_tool_exception_is_captured_and_reraised(monkeypatch):
     """A raising tool still propagates its exception (so the SDK builds the
     client error result), and Sentry.capture_exception is invoked so the failure
-    reaches Better Stack — which it otherwise never would (the SDK swallows tool
+    reaches Sentry — which it otherwise never would (the SDK swallows tool
     exceptions into HTTP 200 isError results)."""
     captured = []
     monkeypatch.setattr(registry.sentry_sdk, "capture_exception", lambda: captured.append(True))
