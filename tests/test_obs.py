@@ -76,16 +76,17 @@ def _sentry_client():
     sentry_sdk.init(dsn=None)
 
 
-def test_init_sentry_wires_mcp_monitoring(monkeypatch, _sentry_client):
+def test_init_sentry_disables_usage_and_pii(
+    monkeypatch: pytest.MonkeyPatch, _sentry_client: None
+) -> None:
     monkeypatch.setattr(obs, "_SENTRY_DSN", "https://public@o0.ingest.us.sentry.io/1")
     obs.init_sentry()
 
     options = sentry_sdk.get_client().options
-    assert "mcp" in sentry_sdk.get_client().integrations
-    # Spans are what MCP monitoring is made of -- at 0.0 the integration sends nothing.
-    assert options["traces_sample_rate"] == 0.1
-    # Tool arguments and results are only attached to spans when PII is on.
-    assert options["send_default_pii"] is True
+    assert "mcp" not in sentry_sdk.get_client().integrations
+    assert "starlette" in sentry_sdk.get_client().integrations
+    assert not options["traces_sample_rate"]
+    assert not options["send_default_pii"]
     assert options["before_send"] is _drop_wrapped_tool_errors
 
 
