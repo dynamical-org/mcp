@@ -1,3 +1,4 @@
+import logging
 from typing import Any
 from unittest.mock import Mock
 
@@ -107,3 +108,32 @@ def test_missing_token_never_constructs_posthog(monkeypatch: pytest.MonkeyPatch)
     with TestClient(analytics.http_app(FastMCP("test", stateless_http=True))) as client:
         assert client.get("/missing").status_code == 404
     constructor.assert_not_called()
+
+
+def test_setup_failure_is_logged_and_server_still_serves(
+    monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    monkeypatch.setenv("POSTHOG_PROJECT_TOKEN", "test-token")
+    monkeypatch.setattr(analytics, "Posthog", Mock(side_effect=RuntimeError("bad config")))
+    server = FastMCP("test-catalog", stateless_http=True, json_response=True)
+
+    with caplog.at_level("ERROR", logger="server.analytics"):
+        app = analytics.http_app(server)
+
+    assert "usage analytics disabled" in caplog.text
+    with TestClient(app, base_url="http://localhost:8000") as client:
+        response = client.post(
+            "/mcp",
+            headers={"Accept": "application/json, text/event-stream"},
+            json={"jsonrpc": "2.0", "id": 1, "method": "tools/list", "params": {}},
+        )
+    assert response.json()["result"]["tools"] == []
+
+
+def test_headerless_session_warning_is_not_logged(caplog: pytest.LogCaptureFixture) -> None:
+    sdk_logger = logging.getLogger("posthog.mcp")
+    with caplog.at_level("WARNING", logger="posthog.mcp"):
+        sdk_logger.warning("an MCP tool request arrived with no session id")
+        sdk_logger.warning("another warning")
+
+    assert [record.getMessage() for record in caplog.records] == ["another warning"]
