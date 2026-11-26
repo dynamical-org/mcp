@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 import os
 from contextlib import suppress
 from contextvars import ContextVar
@@ -14,6 +15,11 @@ from posthog import Posthog
 from posthog.mcp import instrument
 from posthog.mcp.types import MCPAnalyticsOptions
 from starlette.types import ASGIApp, Receive, Scope, Send
+
+logger = logging.getLogger(__name__)
+# Headerless calls get a per-request id in _before_send, so the SDK's
+# once-per-container "no session id" warning describes a case already handled.
+logging.getLogger("posthog.mcp").addFilter(lambda r: "no session id" not in r.getMessage())
 
 _request_id: ContextVar[str | None] = ContextVar("analytics_request_id", default=None)
 # Explicit allowlist: never forward IPs, raw user agents, results or error messages.
@@ -68,6 +74,7 @@ def http_app(server: FastMCP) -> ASGIApp:
             ),
         )
     except Exception:
+        logger.exception("usage analytics disabled: setup failed")
         return server.streamable_http_app()
     app = server.streamable_http_app()
 
