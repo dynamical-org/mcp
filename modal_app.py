@@ -5,11 +5,9 @@ Mirrors the deployment shape used by wxopticon
 wrapping a single ASGI function, kept warm with `min_containers=1` so a
 Claude (or other MCP client) connection doesn't pay a cold start.
 
-v1 has no application secrets: every tool is a public, unauthenticated proxy
-over dynamical.org's own public STAC catalog and status feed. Sentry is
-configured separately with ``SENTRY_DSN`` in the deployment environment. v2's
-planned GitHub OAuth gating would add a `modal.Secret` here for the OAuth app's
-client id/secret, same pattern as wxopticon's `wxopticon-pub` secret.
+Tools proxy the public catalog without authentication. Usage analytics uses
+the PostHog secret named below; error reporting uses sentry-mcp (SENTRY_DSN).
+Both secrets must exist before deployment.
 
 Setup:
     modal deploy modal_app.py
@@ -28,14 +26,17 @@ from __future__ import annotations
 
 import modal
 
+POSTHOG_SECRET_NAME = "posthog-dynamical-api"
+
 app = modal.App("dynamical-mcp-server")
 
 image = (
     modal.Image.debian_slim(python_version="3.13")
     .pip_install(
-        "mcp[cli]>=1.28.0",
-        "httpx>=0.27",
-        "sentry-sdk>=2.63.0",
+        "mcp[cli]==1.28.1",
+        "httpx==0.28.1",
+        "sentry-sdk==2.64.0",
+        "posthog==8.3.0",
     )
     .add_local_python_source("server")
 )
@@ -43,6 +44,7 @@ image = (
 
 @app.function(
     image=image,
+    secrets=[modal.Secret.from_name("sentry-mcp"), modal.Secret.from_name(POSTHOG_SECRET_NAME)],
     # Kept warm: an MCP client's initialize/list_tools round trip shouldn't
     # pay a cold start, same rationale as wxopticon's pub_api.
     min_containers=1,
@@ -58,6 +60,7 @@ image = (
 @modal.asgi_app(custom_domains=["mcp.dynamical.org"])
 def mcp_app():
     from server import obs
+    from server.analytics import http_app
     from server.app import mcp
     from server.web import (
         ContentSecurityPolicyMiddleware,
@@ -75,7 +78,7 @@ def mcp_app():
     # outermost so its duration covers the whole stack; the GET-stream reject
     # is innermost so its 405 still gets logged and carries the CSP header.
     return RequestLoggingMiddleware(
-        ContentSecurityPolicyMiddleware(RejectGetStreamMiddleware(mcp.streamable_http_app()))
+        ContentSecurityPolicyMiddleware(RejectGetStreamMiddleware(http_app(mcp)))
     )
 
 
@@ -84,6 +87,7 @@ def main() -> None:
     """`modal run modal_app.py` — smoke-test the ASGI app locally via uvicorn."""
     import uvicorn
 
+    from server.analytics import http_app
     from server.app import mcp
 
-    uvicorn.run(mcp.streamable_http_app())
+    uvicorn.run(http_app(mcp))

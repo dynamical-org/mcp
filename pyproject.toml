@@ -8,6 +8,7 @@ dependencies = [
     "mcp[cli]>=1.28.0",
     "httpx>=0.27",
     "sentry-sdk>=2.63.0",
+    "posthog==8.3.0",
 ]
 
 [project.urls]

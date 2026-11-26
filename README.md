@@ -162,6 +162,22 @@ Upstream URLs and cache TTLs are all overridable via environment variables
 freshness vs. request volume; the defaults point at the production STAC
 catalog and status feed.
 
+Usage analytics goes to PostHog; errors and alerting go to Sentry. With
+`POSTHOG_PROJECT_TOKEN` unset, usage capture is disabled. `POSTHOG_HOST` defaults
+to `https://us.i.posthog.com`. Events include public-catalog tool arguments,
+latency, outcome, and client product/version; IPs, raw user agents and person
+profiles are excluded. The SDK passes anonymous session metadata through
+`Mcp-Session-Id`; requests without that header get independent random IDs.
+Client metadata is unavailable on later requests if clients omit the header.
+Events queue in the background and flush at application shutdown.
+
+Before deploying, create Modal secret `sentry-mcp` with `SENTRY_DSN`, and
+ensure `posthog-dynamical-api` contains `POSTHOG_PROJECT_TOKEN` (optionally
+`POSTHOG_HOST`). For a separate PostHog project, change `POSTHOG_SECRET_NAME`
+in `modal_app.py` and create that secret first. Missing secrets fail deployment.
+Sentry tracing and MCP usage monitoring are disabled; expected input errors
+remain excluded from error reporting.
+
 ## Repository layout
 
 ```
