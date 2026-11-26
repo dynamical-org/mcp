@@ -110,7 +110,9 @@ async def get_access_pattern(collection_id: str) -> dict[str, Any]:
             "package": "dynamical-catalog",
             "install": "pip install dynamical-catalog",
             "code": (
-                f'import dynamical_catalog\n\nds = dynamical_catalog.open("{collection_id}")\n'
+                "import dynamical_catalog\n"
+                "\n"
+                f'ds = dynamical_catalog.open("{collection_id}")\n'
             ),
         },
         "worked_example": worked_example,
